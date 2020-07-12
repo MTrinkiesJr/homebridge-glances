@@ -4,7 +4,7 @@ This [Homebridge](https://homebridge.io/) plugin platform exposes the `temperatu
 
 Installation
 ```
-npm install -g homebridge-wol
+npm install -g homebridge-glances-temperature
 ```
 
 You need to install [Glances](https://github.com/nicolargo/glances) on your target system and start it in `server mode`, which is done via the paramater `-w` and enbale the `sensors` plugin.
