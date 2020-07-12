@@ -3,6 +3,8 @@
     "name": "Michael Trinkies"
   },
   "dependencies": {
+    "async-lock": "^1.2.4",
+    "guid": "0.0.12",
     "request": "^2.83.0"
   },
   "scripts": {
