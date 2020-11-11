@@ -7,8 +7,7 @@ Installation
 npm install -g homebridge-glances-temperature
 ```
 
-You need to install [Glances](https://github.com/nicolargo/glances) on your target system and start it in `server mode`, which is done via the paramater `-w` and enbale the `sensors` plugin.
-You need to enable the `sensors`plugin, which is not the standard.Start the Glances server with your own configuration. See -> [Configuration Docs](https://glances.readthedocs.io/en/stable/config.html).
+You need to install [Glances](https://github.com/nicolargo/glances) on your target system and start it in `server mode`, which is done via the paramater `-w`. You need to enable the `sensors`plugin, which is not the standard. Start the Glances server with your own configuration. See -> [Configuration Docs](https://glances.readthedocs.io/en/stable/config.html).
 You can also put aliases to you sensors there, so on default they have generic names like 'it3451' etc. 
 Example: 
 
