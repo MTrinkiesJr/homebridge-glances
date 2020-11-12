@@ -3,8 +3,7 @@
     "name": "Michael Trinkies"
   },
   "dependencies": {
-    "async-lock": "^1.2.4",
-    "guid": "0.0.12",
+    "got": "^10.6.0",
     "request": "^2.83.0"
   },
   "scripts": {
@@ -14,7 +13,7 @@
     "postpublish": "npm run clean",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "description": "Glances Temperature Plugin",
+  "description": "Homebridge Glances Plugin",
   "engines": {
     "node": ">=0.12.0",
     "homebridge": ">=1.0.0"
@@ -22,6 +21,7 @@
   "keywords": [
     "Glances",
     "Temperature",
+    "Cpu",
     "homebridge-plugin"
   ],
   "license": "ISC",
@@ -34,10 +34,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MTrinkiesJr/homebridge-glances-temperature.git"
+    "url": "git+https://github.com/MTrinkiesJr/homebridge-glances.git"
   },
-  "name": "homebridge-glances-temperature",
-  "version": "0.0.2",
+  "name": "homebridge-glances",
+  "version": "0.0.3",
   "devDependencies": {
     "@types/node": "10.17.19",
     "typescript": "^3.8.3",

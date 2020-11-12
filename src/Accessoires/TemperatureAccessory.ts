@@ -8,7 +8,7 @@ import {
     CharacteristicValue
   } from "homebridge";
   
-  export class TemperatureSensor implements AccessoryPlugin {
+  export class TemperatureAccessory implements AccessoryPlugin {
   
     private readonly log: Logging;
 
@@ -29,11 +29,11 @@ import {
           callback(undefined, value);
         });
   
-      this.informationService = new hap.Service.AccessoryInformation();
-        // .setCharacteristic(hap.Characteristic.Manufacturer, "Custom Manufacturer")
-        // .setCharacteristic(hap.Characteristic.Model, "Custom Model");
+      this.informationService = new hap.Service.AccessoryInformation()
+        .setCharacteristic(hap.Characteristic.Manufacturer, "Michael Trinkies")
+        .setCharacteristic(hap.Characteristic.Model, "Homebridge Glances Plugin (sensors)");
   
-      log.info("Temperature '%s' created!", name);
+      log.info("TemperatureAccessory '%s' created!", name);
     }
   
     identify(): void {

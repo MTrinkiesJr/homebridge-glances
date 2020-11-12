@@ -1,28 +1,24 @@
 import { AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin } from "homebridge";
-import { TemperatureSensor } from "./TemperatureAccessory";
-import { SensorItem } from "./SensorItem";
-let request = require('request');
-let AsyncLock = require('async-lock');
-let Guid = require('guid');
-
-const PLATFORM_NAME = "GlancesTemperature";
+import { HandlerBase } from "./Handler/HandlerBase";
+import { SensorsHandler } from "./Handler/SensorsHandler";
+import { CpuHandler } from "./Handler/CpuHandler";
+import { MemoryHandler } from "./Handler/MemoryHandler";
 
 let hap: HAP;
-let lock = new AsyncLock({ timeout: 5000, maxPending: 10 });
 
 export = (api: API) => {
   hap = api.hap;
-  api.registerPlatform(PLATFORM_NAME, ExampleStaticPlatform);
+  api.registerPlatform("GlancesTemperature", GlancesPlatform);
 };
 
-class ExampleStaticPlatform implements StaticPlatformPlugin {
+class GlancesPlatform implements StaticPlatformPlugin {
 
   private readonly log: Logging;
-  private readonly hostname: String;
-  private readonly port: Number;
+  private readonly hostname: string;
+  private readonly port: number;
   private readonly updateInterval: number;
   private readonly prefix: string;
-  private foundAccessories: TemperatureSensor[] = [];
+  private readonly Handlers: HandlerBase[];
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
@@ -30,75 +26,73 @@ class ExampleStaticPlatform implements StaticPlatformPlugin {
     this.port = config.port ?? 61208;
     this.updateInterval = config.updateInterval ?? 5000;
     this.prefix = config.prefix ?? "";
-    log.info(PLATFORM_NAME + " finished initializing!");
+    this.Handlers = [];
+
+    if (config.sensors) {
+      log.info("Sensors Handler enabled");
+      this.Handlers.push(new SensorsHandler(hap, this.prefix, this.hostname, this.port, log))
+    }
+    if (config.cpu) {
+      log.info("Cpu Handler enabled");
+      this.Handlers.push(new CpuHandler(hap, this.prefix, this.hostname, this.port, log))
+    }
+
+    if (config.memory) {
+      log.info("Memory Handler enabled");
+      this.Handlers.push(new MemoryHandler(hap, this.prefix, this.hostname, this.port, log))
+    }
+    log.info("GlancesTemperature finished initializing!");
   }
 
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
+    let accessories: AccessoryPlugin[];
+    accessories = [];
 
-    let _self = this;
+    let self = this;
 
-    setInterval(function () {
-      _self.updateAccessoires();
-    }, _self.updateInterval);
+    if (self.Handlers.length >= 1) {
+      self.Handlers[0].getServices(accessories, function (accs1) {
 
-    this.addAccessoires(function (accessoires) {
-      callback(accessoires);
-      _self.log("found: '" + accessoires.length + "' accessoires");
-    });
+        if (self.Handlers.length >= 2) {
+          self.Handlers[1].getServices(accessories, function (accs2) {
 
-
-  }
-
-  addAccessoires(callback: (accessoires: TemperatureSensor[]) => void): void {
-    let _self = this;
-    this.getSensors(function (sensors) {
-      for (let i = 0; i < sensors.length; i++) {
-        let item = sensors[i] as SensorItem;
-        if (item.type == "temperature_core") {
-          var name = (_self.prefix + " " + item.label);
-          var accessory = new TemperatureSensor(hap, _self.log, name , item.value.toString());
-          _self.foundAccessories.push(accessory);
-        }
-      }
-      callback(_self.foundAccessories);
-    });
-  }
-
-  getSensors(callback: (accessoires: SensorItem[]) => void): void {
-    let _self = this;
-    let req = request('http://' + this.hostname + ':' + this.port + '/api/3/sensors', { json: true }, function (error: any, response: any, body: any) {
-      if (error) {
-        _self.log("request error: " + error);
-      }
-
-      let sensors = response.body as SensorItem[];
-      callback(sensors);
-    });
-
-  }
-
-  updateAccessoires(): void {
-    let _self = this;
-    let key = Guid.create().value;
-    lock.acquire(key, function (done: any) {
-      _self.getSensors(function (sensors) {
-        for (let i = 0; i < sensors.length; i++) {
-          var sensor = sensors[i];
-          if (sensor.type == "temperature_core") {
-
-            var existendItem = _self.foundAccessories.find(a => (a as TemperatureSensor).name == (_self.prefix + " " + sensor.label));
-
-            if (existendItem) {
-              existendItem?.TempService.getCharacteristic(hap.Characteristic.CurrentTemperature).updateValue(sensor.value);
+            if (self.Handlers.length >= 3) {
+              self.Handlers[2].getServices(accessories, function (accs3) {
+                self.startInterval();
+                self.log.info("Found accessories: " + accessories.length);
+                callback(accessories);
+                return;
+              });
             }
-          }
+            else {
+              self.startInterval();
+              self.log.info("Found accessories: " + accessories.length);
+              callback(accessories);
+            }
+          });
+        }
+        else {
+          self.startInterval();
+          self.log.info("Found accessories: " + accessories.length);
+          callback(accessories);
         }
       });
+    }
+    else {
+      self.log.info("Found accessories: " + accessories.length);
+      callback(accessories);
+    }
+  }
 
-      done(null, null);
-    }, function (err: any, ret: any) {
-    });
-  };
+
+  startInterval() {
+    let self = this;
+    setInterval(function () {
+      for (let i = 0; i < self.Handlers.length; i++) {
+        self.Handlers[i].updateServices();
+      }
+    }, self.updateInterval);
+  }
 }
 
 

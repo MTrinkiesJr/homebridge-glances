@@ -1,4 +1,4 @@
-export class SensorItem
+export class SensorInfo
 {
     public key: string;
     public type: string;
