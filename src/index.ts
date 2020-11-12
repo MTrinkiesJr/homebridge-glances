@@ -8,7 +8,7 @@ let hap: HAP;
 
 export = (api: API) => {
   hap = api.hap;
-  api.registerPlatform("GlancesTemperature", GlancesPlatform);
+  api.registerPlatform("Glances", GlancesPlatform);
 };
 
 class GlancesPlatform implements StaticPlatformPlugin {
@@ -41,7 +41,7 @@ class GlancesPlatform implements StaticPlatformPlugin {
       log.info("Memory Handler enabled");
       this.Handlers.push(new MemoryHandler(hap, this.prefix, this.hostname, this.port, log))
     }
-    log.info("GlancesTemperature finished initializing!");
+    log.info("Glances finished initializing!");
   }
 
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
