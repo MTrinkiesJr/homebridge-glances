@@ -65,7 +65,7 @@ following parameters are defined:
 |hostname|required||The ip or hostname of your target system where  glances server is running|
 |port|optional|61208|The port of your target system where glances server is running|
 |updateInterval|optional|5000|The update interval in milliseconds to update the sensors, **ATTENTION** values below 1000 may slow down your homebridge or target system|
-|prefix|optional||A prefix when you have multiple glances target systems so you can identify them|
+|prefix|optional||A prefix to identify the exposed accessories better|
 |sensors|optional|false|Enables the sensors plugin to be exposed|
 |cpu|optional|false|Enables the cpu plugin to be exposed|
 |memory|optional|false|Enables the memory plugin to be exposed|
@@ -73,4 +73,5 @@ following parameters are defined:
 Future plans:
 
 - integrate the homebridge configuration scheme to enable configuration in [homebridge-config-ui-x](https://www.npmjs.com/package/homebridge-config-ui-x)
+- add support for multiple hosts
 - more plugins for glances to expose network and filesystem
