@@ -13,6 +13,9 @@ Following Plugins are supported:
 - sensors -> Temperature data
 - cpu -> Cpu load
 - mem -> Memory load
+
+*Annotation* : The cpu loads and memory loads are exposed as `BatteryService`, because the loads are in percent value, the `BatteryService.BatteryLevel` characteristic was the best option for that.
+
 Example: 
 
 ```
