@@ -54,7 +54,7 @@
                 "description": "Enables the cpu plugin to be exposed"
             },
             "memory": {
-                "title": " Enable Debug Mode",
+                "title": "Memory Plugin",
                 "type": "boolean",
                 "default": false,
                 "required": false,
