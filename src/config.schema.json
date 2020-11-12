@@ -1,0 +1,65 @@
+{
+    "pluginAlias": "Glances",
+    "pluginType": "platform",
+    "singular": true,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "title": "Name",
+                "type": "string",
+                "required": true,
+                "default": "Glances",
+                "description": "Plugin name as displayed in the Homebridge log"
+            },
+            "hostname": {
+                "title": "Hostname/IP",
+                "type": "string",
+                "required": true,
+                "description": "The ip or hostname of your target system where glances server is running"
+            },
+            "port": {
+                "title": "Port",
+                "type": "integer",
+                "required": false,
+                "default": 61208,
+                "description": "The port of your target system where glances server is running"
+            },
+            "updateInterval": {
+                "title": "Update Interval",
+                "type": "integer",
+                "default": 3000,
+                "description": "The update interval in milliseconds to update the sensors, ATTENTION values below 1000 may slow down your homebridge or target system",
+                "minimum": 1000,
+                "maximum": 10000
+            },
+            "prefix": {
+                "title": "Prefix",
+                "type": "string",
+                "required": false,
+                "description": "A prefix to identify the exposed accessories better"
+            },
+            "sensors": {
+                "title": "Sensor Plugin",
+                "type": "boolean",
+                "default": false,
+                "required": false,
+                "description": "Enables the sensors plugin to be exposed"
+            },
+            "cpu": {
+                "title": "Enables natural wording for opening and closing garage doors.  Not supported in all countries.  Please note that opening a garage door requires setting a voice pin within the Alexa app.  Defaults to false",
+                "type": "boolean",
+                "default": false,
+                "required": false,
+                "description": "Enables the cpu plugin to be exposed"
+            },
+            "memory": {
+                "title": " Enable Debug Mode",
+                "type": "boolean",
+                "default": false,
+                "required": false,
+                "description": "Enables the memory plugin to be exposed"
+            }
+        }
+    }
+}
