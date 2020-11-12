@@ -1,56 +1,54 @@
 import {
     Logging,
-    AccessoryPlugin,
+    API,
     HAP,
 } from "homebridge";
 import { HandlerBase } from "./HandlerBase";
+import { BaseAccessory } from "../Accessoires/BaseAccessory";
 import { LoadAccessory } from "../Accessoires/LoadAccessory"
 import { MemoryInfo } from "../Models/MemoryInfo"
 const got = require('got');
-let request = require('request');
 
 export class MemoryHandler extends HandlerBase {
     UsedMemoryInfo: LoadAccessory;
 
-    constructor(hap: HAP, prefix: string, hostname: string, port: number, log: Logging) {
-        super(hap, prefix, hostname, port, log);
+    constructor(hap: HAP,api: API, prefix: string, hostname: string, port: number, log: Logging) {
+        super(hap, api, prefix, hostname, port, log);
         this.UsedMemoryInfo = {} as LoadAccessory;
     }
 
-    getServices(accessories: AccessoryPlugin[], callback: (accessoires: AccessoryPlugin[]) => void): void {
+    async getServices(): Promise<BaseAccessory[]> {
         this.log.info("MemoryHandler: starting discovery");
-        let self = this;
-        this.getMemoryInfo(function (memoryInfo) {
-            self.UsedMemoryInfo = new LoadAccessory(self.hap, self.log, self.prefix + " MEMORY USED", memoryInfo.percent);
-
-            accessories.push(self.UsedMemoryInfo);
-            self.log.info("MemoryHandler: discovery finished");
-            callback(accessories);
-        });
+        let memoryInfo = await this.getMemoryInfo() as MemoryInfo;
+        this.log.info("MemoryHandler: received'" + JSON.stringify(memoryInfo) + "'");
+        if (memoryInfo) {
+            this.UsedMemoryInfo = new LoadAccessory(this.hap,this.api, this.log, this.prefix + " MEMORY USED", memoryInfo.percent);
+            this.log.info("MemoryHandler: discovery finished");
+            return Promise.resolve([this.UsedMemoryInfo]);
+        }
+        return Promise.resolve([]);
     }
 
-    private getMemoryInfo(callback: (memoryInfo: MemoryInfo) => void): void {
-        let self = this;
-
+    private async getMemoryInfo(): Promise<MemoryInfo> {
         let memoryInfo: MemoryInfo;
         memoryInfo = {} as MemoryInfo;
 
-        var res = request('http://' + this.hostname + ':' + this.port + '/api/3/mem', { json: true }, function (error: any, response: any, body: any) {
-            if (error) {
-                self.log.info("request error: " + error);
+        try {
+            let response = await got('http://' + this.hostname + ':' + this.port + '/api/3/mem');
+
+            if (response.statusCode) {
+                return Promise.resolve(JSON.parse(response.body) as MemoryInfo);
             }
-            callback(response.body as MemoryInfo);
-        });
+        } catch (error) {
+            this.log.error("MemoryHandler: Failed request: '" + error + "'")
+        }
+        return Promise.resolve({} as MemoryInfo);
     }
 
-    updateServices(): void {
-        let self = this;
-        this.getMemoryInfo(function (memoryInfo) {
-            if (self.UsedMemoryInfo) {
-                self.UsedMemoryInfo?.LoadService.getCharacteristic(self.hap.Characteristic.BatteryLevel).updateValue(memoryInfo.percent);
-                self.UsedMemoryInfo?.InformationService.setCharacteristic(self.hap.Characteristic.ConfiguredName, memoryInfo.used + "Bytes / " + memoryInfo.total + " Bytes")
-                self.UsedMemoryInfo?.InformationService.getCharacteristic(self.hap.Characteristic.ConfiguredName).updateValue(memoryInfo.used + "Bytes / " + memoryInfo.total + " Bytes");
-            }
-        });
+    async updateServices(): Promise<void> {
+        let memoryInfo = await this.getMemoryInfo();
+        if (this.UsedMemoryInfo) {
+            this.UsedMemoryInfo?.LoadService.getCharacteristic(this.hap.Characteristic.BatteryLevel).updateValue(memoryInfo.percent);
+        }
     };
 }

@@ -1,8 +1,11 @@
 import {
     HAP,
-    Logging,
-    AccessoryPlugin
+    API,
+    Logging
   } from "homebridge";
+
+  
+import {BaseAccessory} from "../Accessoires/BaseAccessory";
 
 export abstract class HandlerBase {
 
@@ -11,17 +14,19 @@ export abstract class HandlerBase {
     port : number;
     hap: HAP;
     prefix: string;
+    api: API;
 
-    constructor(hap: HAP, prefix: string, hostname: string, port: number, log: Logging)
+    constructor(hap: HAP,api: API, prefix: string, hostname: string, port: number, log: Logging)
     {
         this.hostname = hostname;
         this.port = port;
         this.log = log;
         this.prefix = prefix;
         this.hap = hap;
+        this.api = api;
     }
 
-    abstract getServices(accessories: AccessoryPlugin[], callback: (accessoires: AccessoryPlugin[]) => void): void
+    abstract async getServices(): Promise<BaseAccessory[]>
 
-    abstract updateServices() : void;
+    abstract async updateServices() : Promise<void>;
 }

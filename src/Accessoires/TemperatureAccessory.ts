@@ -1,50 +1,40 @@
 import {
-    AccessoryPlugin,
-    CharacteristicGetCallback,
-    HAP,
-    Logging,
-    Service,
-    CharacteristicEventTypes,
-    CharacteristicValue
-  } from "homebridge";
-  
-  export class TemperatureAccessory implements AccessoryPlugin {
-  
-    private readonly log: Logging;
+  API,
+  CharacteristicGetCallback,
+  HAP,
+  Logging,
+  Service,
+  CharacteristicEventTypes
+} from "homebridge";
 
-    name: string;
-    value: string;
-  
-    public TempService: Service;
-    private readonly informationService: Service;
-  
-    constructor(hap: HAP, log: Logging, name: string, value: string) {
-      this.log = log;
-      this.name = name;
-      this.value = value;
-  
-      this.TempService = new hap.Service.TemperatureSensor(name);
-      this.TempService.getCharacteristic(hap.Characteristic.CurrentTemperature)
-        .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-          callback(undefined, value);
-        });
-  
-      this.informationService = new hap.Service.AccessoryInformation()
-        .setCharacteristic(hap.Characteristic.Manufacturer, "Michael Trinkies")
-        .setCharacteristic(hap.Characteristic.Model, "Homebridge Glances Plugin (sensors)");
-  
-      log.info("TemperatureAccessory '%s' created!", name);
-    }
-  
-    identify(): void {
-      this.log("Identify!");
-    }
-  
-    getServices(): Service[] {
-      return [
-        this.informationService,
-        this.TempService,
-      ];
-    }
-  
+import {BaseAccessory} from "./BaseAccessory";
+
+export class TemperatureAccessory extends BaseAccessory {
+
+  private readonly log: Logging;
+
+  value: string;
+
+  public TempService: Service;
+  hap: HAP;
+
+  constructor(hap: HAP, api:API, log: Logging, name: string, value: string) {
+    super(name, api);
+    this.log = log;
+    this.value = value;
+    this.hap = hap;
+
+    this.TempService = new this.hap.Service.TemperatureSensor(this.Name, this.hap.uuid.generate(this.Name + "_data"));
+    this.TempService.getCharacteristic(this.hap.Characteristic.CurrentTemperature)
+      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+        callback(undefined, this.value);
+      });
+
+      this.Accessory = new this.API.platformAccessory(this.Name, hap.uuid.generate(this.Name));
+      this.Accessory.addService(this.TempService);
   }
+
+  getServices(): Service[] {
+    return [this.TempService];
+  }
+}

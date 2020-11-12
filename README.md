@@ -70,8 +70,19 @@ following parameters are defined:
 |cpu|optional|false|Enables the cpu plugin to be exposed|
 |memory|optional|false|Enables the memory plugin to be exposed|
 
+## Release Notes
+### Version 1.0.0 
+- Initial Version
+### Version 1.0.1
+- Some small fixes
+### Version 1.0.2
+- made it all asynch
+- changed from `StaticPlatform` to `DynamicPlatform` (for async reasons)
+- better error handling
+- logs
+
+
 Future plans:
 
-- integrate the homebridge configuration scheme to enable configuration in [homebridge-config-ui-x](https://www.npmjs.com/package/homebridge-config-ui-x)
 - add support for multiple hosts
 - more plugins for glances to expose network and filesystem

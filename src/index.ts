@@ -1,8 +1,9 @@
-import { AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin } from "homebridge";
+import { PlatformAccessory, APIEvent, API, HAP, Logging, PlatformConfig, DynamicPlatformPlugin } from "homebridge";
 import { HandlerBase } from "./Handler/HandlerBase";
 import { SensorsHandler } from "./Handler/SensorsHandler";
 import { CpuHandler } from "./Handler/CpuHandler";
 import { MemoryHandler } from "./Handler/MemoryHandler";
+import { BaseAccessory } from "./Accessoires/BaseAccessory";
 
 let hap: HAP;
 
@@ -11,14 +12,15 @@ export = (api: API) => {
   api.registerPlatform("Glances", GlancesPlatform);
 };
 
-class GlancesPlatform implements StaticPlatformPlugin {
+class GlancesPlatform implements DynamicPlatformPlugin {
 
   private readonly log: Logging;
   private readonly hostname: string;
   private readonly port: number;
   private readonly updateInterval: number;
   private readonly prefix: string;
-  private readonly Handlers: HandlerBase[];
+  private readonly handlers: HandlerBase[];
+  private accessories: PlatformAccessory[];
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
@@ -26,73 +28,72 @@ class GlancesPlatform implements StaticPlatformPlugin {
     this.port = config.port ?? 61208;
     this.updateInterval = config.updateInterval ?? 5000;
     this.prefix = config.prefix ?? "";
-    this.Handlers = [];
+    this.handlers = [];
+    this.accessories = [];
 
     if (config.sensors) {
       log.info("Sensors Handler enabled");
-      this.Handlers.push(new SensorsHandler(hap, this.prefix, this.hostname, this.port, log))
+      this.handlers.push(new SensorsHandler(hap, api, this.prefix, this.hostname, this.port, log))
     }
     if (config.cpu) {
       log.info("Cpu Handler enabled");
-      this.Handlers.push(new CpuHandler(hap, this.prefix, this.hostname, this.port, log))
+      this.handlers.push(new CpuHandler(hap, api, this.prefix, this.hostname, this.port, log))
     }
 
     if (config.memory) {
       log.info("Memory Handler enabled");
-      this.Handlers.push(new MemoryHandler(hap, this.prefix, this.hostname, this.port, log))
+      this.handlers.push(new MemoryHandler(hap, api, this.prefix, this.hostname, this.port, log))
     }
+
+    api.on(APIEvent.DID_FINISH_LAUNCHING, async () => {
+
+      try {
+        for (let i = 0; i < this.handlers.length; i++) {
+          let handlerAccessories: PlatformAccessory[];
+          handlerAccessories = [];
+          let received = await this.handlers[i].getServices() as BaseAccessory[];
+
+
+          let accessoryPlugin : BaseAccessory;
+          accessoryPlugin = {} as BaseAccessory;
+          for (let j = 0; j < received.length; j++) {
+            try {
+              accessoryPlugin = received[j];          
+              handlerAccessories.push(accessoryPlugin.Accessory);
+            }
+            catch (error) {
+              this.log.error("Failed to add accessory '" + accessoryPlugin.Name + "': error: '" + error + "'");
+            }
+          }
+
+          this.accessories = this.accessories.concat(handlerAccessories);
+        }
+
+        this.log.info("Registered " + this.accessories.length + " accessories");
+        api.registerPlatformAccessories('Glances', config.Name, this.accessories);
+
+        if (this.accessories.length > 0) {
+          this.startInterval();
+        }
+      }
+      catch (error) {
+        this.log.error("Failed to load accessories: '" + error + "'");
+      }
+    });
+
     log.info("Glances finished initializing!");
-  }
-
-  accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    let accessories: AccessoryPlugin[];
-    accessories = [];
-
-    let self = this;
-
-    if (self.Handlers.length >= 1) {
-      self.Handlers[0].getServices(accessories, function (accs1) {
-
-        if (self.Handlers.length >= 2) {
-          self.Handlers[1].getServices(accessories, function (accs2) {
-
-            if (self.Handlers.length >= 3) {
-              self.Handlers[2].getServices(accessories, function (accs3) {
-                self.startInterval();
-                self.log.info("Found accessories: " + accessories.length);
-                callback(accessories);
-                return;
-              });
-            }
-            else {
-              self.startInterval();
-              self.log.info("Found accessories: " + accessories.length);
-              callback(accessories);
-            }
-          });
-        }
-        else {
-          self.startInterval();
-          self.log.info("Found accessories: " + accessories.length);
-          callback(accessories);
-        }
-      });
-    }
-    else {
-      self.log.info("Found accessories: " + accessories.length);
-      callback(accessories);
-    }
   }
 
 
   startInterval() {
+    this.log.info("Staring updating timer");
     let self = this;
     setInterval(function () {
-      for (let i = 0; i < self.Handlers.length; i++) {
-        self.Handlers[i].updateServices();
+      for (let i = 0; i < self.handlers.length; i++) {
+        self.handlers[i].updateServices();
       }
     }, self.updateInterval);
   }
+
+  configureAccessory(accessory: PlatformAccessory): void { };
 }
-
-

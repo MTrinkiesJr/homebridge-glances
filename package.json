@@ -3,8 +3,7 @@
     "name": "Michael Trinkies"
   },
   "dependencies": {
-    "got": "^10.6.0",
-    "request": "^2.83.0"
+    "got": "^10.6.0"
   },
   "scripts": {
     "clean": "rimraf ./dist",
@@ -38,7 +37,7 @@
     "url": "git+https://github.com/MTrinkiesJr/homebridge-glances.git"
   },
   "name": "homebridge-glances",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "devDependencies": {
     "@types/node": "10.17.19",
     "typescript": "^3.8.3",

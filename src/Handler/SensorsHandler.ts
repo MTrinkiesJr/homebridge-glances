@@ -1,65 +1,67 @@
 import {
     Logging,
-    AccessoryPlugin,
+    API,
     HAP,
 } from "homebridge";
 import { HandlerBase } from "./HandlerBase";
+import { BaseAccessory } from "../Accessoires/BaseAccessory";
 import { SensorInfo } from "../Models/SensorInfo"
 import { TemperatureAccessory } from "../Accessoires/TemperatureAccessory"
-let request = require('request');
+const got = require('got');
 
 export class SensorsHandler extends HandlerBase {
     sensors: TemperatureAccessory[];
-    constructor(hap: HAP, prefix: string, hostname: string, port: number, log: Logging) {
-        super(hap, prefix, hostname, port, log);
+    constructor(hap: HAP,api: API, prefix: string, hostname: string, port: number, log: Logging) {
+        super(hap,api, prefix, hostname, port, log);
         this.sensors = [];
     }
 
-    getServices(accessories: AccessoryPlugin[], callback: (accessoires: AccessoryPlugin[]) => void): void {
+    async getServices(): Promise<BaseAccessory[]> {
         this.log.info("SensorsHandler: starting discovery");
-        let self = this;
-        this.getSensors(function (sensors) {
+        let sensors = await this.getSensors() as SensorInfo[];
+        let accessories: BaseAccessory[];
+        accessories = [];
 
-            self.log.info("SensorsHandler: received (" + sensors?.length + "): '" + JSON.stringify(sensors) + "'");
+        this.log.info("SensorsHandler: received (" + sensors?.length + "): '" + JSON.stringify(sensors) + "'");
 
-            for (let i = 0; i < sensors.length; i++) {
-                let item = sensors[i] as SensorInfo;
-                if (item.type == "temperature_core") {
-                    var accessory = new TemperatureAccessory(self.hap, self.log, self.prefix + " " + item.label, item.value.toString());
-                    self.sensors.push(accessory);
-                    accessories.push(accessory);
-                }
+        for (let i = 0; i < sensors.length; i++) {
+            let item = sensors[i] as SensorInfo;
+            if (item.type == "temperature_core") {
+                this.log.info("Adding: " + this.prefix + " " + item.label);
+                var accessory = new TemperatureAccessory(this.hap, this.api, this.log, this.prefix + " " + item.label, item.value.toString());
+                this.sensors.push(accessory);
+                accessories.push(accessory);
             }
-            self.log.info("SensorsHandler: discovery finished");
-            callback(accessories);
-        });
+        }
+        this.log.info("SensorsHandler: discovery finished");
+        return Promise.resolve(accessories);
     }
 
-    private getSensors(callback: (sensors: SensorInfo[]) => void): void {
-        let self = this;
-        let req = request('http://' + this.hostname + ':' + this.port + '/api/3/sensors', { json: true }, function (error: any, response: any, body: any) {
-            if (error) {
-                self.log.error("request error: " + error);
-                return [];
+    private async getSensors(): Promise<SensorInfo[]> {
+        let response = await got('http://' + this.hostname + ':' + this.port + '/api/3/sensors');
+
+        try {
+            if (response.statusCode == 200) {
+                return Promise.resolve(JSON.parse(response.body) as SensorInfo[])
             }
-            callback(response.body as SensorInfo[]);
-        });
+        } catch (error) {
+            this.log.error("SensorsHandler: Failed request: '" + error + "'")
+        }
+        return Promise.resolve([]);
     }
 
-    updateServices(): void {
-        let self = this;
-        this.getSensors(function (sensors) {
-            for (let i = 0; i < sensors.length; i++) {
-                var sensor = sensors[i];
-                if (sensor.type == "temperature_core") {
+    async updateServices(): Promise<void> {
+        let sensors = await this.getSensors();
+        for (let i = 0; i < sensors.length; i++) {
+            var sensor = sensors[i];
+            if (sensor.type == "temperature_core") {
 
-                    var existendItem = self.sensors.find(a => (a as TemperatureAccessory).name == (self.prefix + " " + sensor.label));
+                var existendItem = this.sensors.find(a => (a as TemperatureAccessory).Name == (this.prefix + " " + sensor.label));
 
-                    if (existendItem) {
-                        existendItem?.TempService.getCharacteristic(self.hap.Characteristic.CurrentTemperature).updateValue(sensor.value);
-                    }
+                if (existendItem) {
+                    existendItem?.TempService.getCharacteristic(this.hap.Characteristic.CurrentTemperature).updateValue(sensor.value);
                 }
             }
-        });
+        }
     };
 }
