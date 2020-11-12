@@ -47,7 +47,7 @@
                 "description": "Enables the sensors plugin to be exposed"
             },
             "cpu": {
-                "title": "Enables natural wording for opening and closing garage doors.  Not supported in all countries.  Please note that opening a garage door requires setting a voice pin within the Alexa app.  Defaults to false",
+                "title": "Cpu Plugin",
                 "type": "boolean",
                 "default": false,
                 "required": false,

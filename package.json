@@ -38,7 +38,7 @@
     "url": "git+https://github.com/MTrinkiesJr/homebridge-glances.git"
   },
   "name": "homebridge-glances",
-  "version": "0.0.7",
+  "version": "1.0.0",
   "devDependencies": {
     "@types/node": "10.17.19",
     "typescript": "^3.8.3",
