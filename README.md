@@ -1,5 +1,7 @@
 # Homebridge Glances plugin
 
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+
 This [Homebridge](https://homebridge.io/) plugin platform exposes the `temperature sensors`, `cpu load` and `memory load` from  [Glances Monitoring Tool](https://github.com/nicolargo/glances) as accessoires to homebridge.
 
 Installation
