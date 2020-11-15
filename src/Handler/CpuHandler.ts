@@ -50,7 +50,6 @@ export class CpuHandler extends HandlerBase {
     async updateServices(): Promise<void> {
         let cpuInfo = await this.getCpuInfo();
         if (this.TotalCpuSensor) {
-            this.log.info("Updating cpu info");
             this.TotalCpuSensor?.LoadService.getCharacteristic(this.hap.Characteristic.CurrentRelativeHumidity).updateValue(cpuInfo.total);
         }
     };
