@@ -48,7 +48,7 @@ export class MemoryHandler extends HandlerBase {
     async updateServices(): Promise<void> {
         let memoryInfo = await this.getMemoryInfo();
         if (this.UsedMemoryInfo) {
-            this.UsedMemoryInfo?.LoadService.getCharacteristic(this.hap.Characteristic.BatteryLevel).updateValue(memoryInfo.percent);
+            this.UsedMemoryInfo?.LoadService.getCharacteristic(this.hap.Characteristic.CurrentRelativeHumidity).updateValue(memoryInfo.percent);
         }
     };
 }
