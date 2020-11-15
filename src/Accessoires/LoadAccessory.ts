@@ -20,8 +20,8 @@ import {
       this.log = log;
       this.value = value;
 
-      this.LoadService = new hap.Service.HumiditySensor(this.Name);
-      this.LoadService.getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)
+      this.LoadService = new hap.Service.ServiceLabel(this.Name);
+      this.LoadService.getCharacteristic(hap.Characteristic.ServiceLabelNamespace)
         .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
           callback(undefined, this.float2int(this.value));
         });

@@ -16,7 +16,7 @@ Following Plugins are supported:
 - cpu -> Cpu load
 - mem -> Memory load
 
-*Annotation* : The cpu loads and memory loads are exposed as `BatteryService`, because the loads are in percent value, the `BatteryService.BatteryLevel` characteristic was the best option for that.
+*Annotation* : The cpu loads and memory loads are exposed as `ServiceLabel`, because the loads are in percent value, the `ServiceLabel.ServiceLabelNamespace` characteristic was the best option for that.
 
 Example: 
 
