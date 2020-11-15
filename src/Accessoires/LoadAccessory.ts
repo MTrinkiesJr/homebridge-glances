@@ -20,20 +20,10 @@ import {
       this.log = log;
       this.value = value;
 
-      this.LoadService = new hap.Service.ServiceLabel(this.Name);
-      this.LoadService.getCharacteristic(hap.Characteristic.ServiceLabelNamespace)
+      this.LoadService = new hap.Service.HumiditySensor(this.Name);
+      this.LoadService.getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)
         .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
           callback(undefined, this.float2int(this.value));
-        });
-
-        this.LoadService.getCharacteristic(hap.Characteristic.ChargingState)
-        .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-          callback(undefined, 0);
-        });
-
-        this.LoadService.getCharacteristic(hap.Characteristic.StatusLowBattery)
-        .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-          callback(undefined, 0);
         });
 
         this.Accessory = new this.API.platformAccessory(this.Name, hap.uuid.generate(this.Name));

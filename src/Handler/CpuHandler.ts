@@ -51,7 +51,7 @@ export class CpuHandler extends HandlerBase {
         let cpuInfo = await this.getCpuInfo();
         if (this.TotalCpuSensor) {
             this.log.info("Updating cpu info");
-            this.TotalCpuSensor?.LoadService.getCharacteristic(this.hap.Characteristic.ServiceLabelNamespace).updateValue(cpuInfo.total);
+            this.TotalCpuSensor?.LoadService.getCharacteristic(this.hap.Characteristic.CurrentRelativeHumidity).updateValue(cpuInfo.total);
         }
     };
 }
