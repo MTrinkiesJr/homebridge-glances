@@ -34,7 +34,7 @@ export class MemoryHandler extends HandlerBase {
         memoryInfo = {} as MemoryInfo;
 
         try {
-            let response = await got('http://' + this.hostname + ':' + this.port + '/api/3/mem');
+            let response = await got('http://' + this.hostname + ':' + this.port + '/api/4/mem');
 
             if (response.statusCode) {
                 return Promise.resolve(JSON.parse(response.body) as MemoryInfo);
