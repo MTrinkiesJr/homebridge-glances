@@ -82,6 +82,16 @@ following parameters are defined:
 - changed from `StaticPlatform` to `DynamicPlatform` (for async reasons)
 - better error handling
 - logs
+### Version 1.0.3
+- changed load accessories from BatteryService to HumiditySensor
+### Version 1.0.4
+- changed load accessories from HumidityService to ServiceLabel
+- changed back to HumidityService
+### Version 1.0.5
+- removed cpu updated log
+### Version 1.0.6
+- updated dependencies
+- call v4 of glances API and fallback to v3
 
 
 Future plans:
