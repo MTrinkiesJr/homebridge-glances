@@ -1,61 +1,67 @@
-import {
+import type {
   Logging,
   API,
   HAP,
 } from 'homebridge';
 import { HandlerBase } from './HandlerBase.js';
-import { BaseAccessory } from '../Accessoires/BaseAccessory.js';
+import type { BaseAccessory } from '../Accessoires/BaseAccessory.js';
 import { LoadAccessory } from '../Accessoires/LoadAccessory.js';
-import { CpuInfo } from '../Models/CpuInfo.js';
-import got from 'got';
+import type { CpuInfo } from '../Models/CpuInfo.js';
+import ky, { HTTPError } from 'ky';
 
 export class CpuHandler extends HandlerBase {
-  TotalCpuSensor: LoadAccessory;
+  private TotalCpuSensor?: LoadAccessory;
 
   constructor(hap: HAP,api: API, prefix: string, hostname: string, port: number, log: Logging) {
     super(hap, api,prefix, hostname, port, log);
-    this.TotalCpuSensor = {} as LoadAccessory;
   }
 
   async getServices(): Promise<BaseAccessory[]> {
     this.log.info('CpuHandler: starting discovery');
-    const cpuInfo = await this.getCpuInfo() as CpuInfo;
+    const cpuInfo = await this.getCpuInfo();
 
-    this.log.info('CpuHandler: received\'' + JSON.stringify(cpuInfo) + '\'');
+    this.log.info(`CpuHandler: received '${JSON.stringify(cpuInfo)}'`);
 
-    if (cpuInfo) {
-      this.TotalCpuSensor = new LoadAccessory(this.hap,this.api, this.log, this.prefix + ' CPU TOTAL', cpuInfo.total);
+    if (cpuInfo && typeof cpuInfo.total === 'number') {
+      this.TotalCpuSensor = new LoadAccessory(this.hap,this.api, this.log, `${this.prefix} CPU TOTAL`, cpuInfo.total);
       this.log.info('CpuHandler: discovery finished');
-      return Promise.resolve([this.TotalCpuSensor]);
+      return [this.TotalCpuSensor];
     }
-    return Promise.resolve([]);
+    return [];
   }
 
   private async getCpuInfo(): Promise<CpuInfo> {
     try {
-      const response = await got('http://' + this.hostname + ':' + this.port + '/api/4/cpu', { throwHttpErrors: false });
-
-      if (response.statusCode === 200) {
-        return Promise.resolve(JSON.parse(response.body) as CpuInfo);
-      }
-      // Check for glances version 3 api
-      if (response.statusCode === 404) {
-        this.log.debug('CPUHandler: v4 endpoint not found, falling back to v3');
-        const responsev3 = await got('http://' + this.hostname + ':' + this.port + '/api/3/cpu');
-        if (responsev3.statusCode === 200) {
-          return Promise.resolve(JSON.parse(responsev3.body) as CpuInfo);
+      const api = ky.create({
+        prefixUrl: `http://${this.hostname}:${this.port}/api`,
+        timeout: 5000,
+        retry: { limit: 1 },
+      });
+      try {
+        const cpu = await api.get('4/cpu').json<CpuInfo>();
+        return cpu;
+      } catch (err: unknown) {
+        if (err instanceof HTTPError) {
+          if (err.response?.status === 404) {
+            this.log.debug('CPUHandler: v4 endpoint not found, falling back to v3');
+            const cpuV3 = await api.get('3/cpu').json<CpuInfo>();
+            return cpuV3;
+          }
+          throw new Error(`HTTP ${err.response.status}: ${err.message}`);
         }
+        throw err instanceof Error ? err : new Error(String(err)); // Non-HTTP errors: normalize to Error
       }
-    } catch (error) {
-      this.log.error('CpHandler: Failed request: \'' + error + '\'');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.log.error(`CpuHandler: Failed request: '${msg}'`);
+      return {} as CpuInfo;
     }
-    return Promise.resolve({} as CpuInfo);
   }
 
   async updateServices(): Promise<void> {
     const cpuInfo = await this.getCpuInfo();
     if (this.TotalCpuSensor) {
-      this.TotalCpuSensor?.LoadService.getCharacteristic(this.hap.Characteristic.CurrentRelativeHumidity).updateValue(cpuInfo.total);
+      this.TotalCpuSensor.LoadService.getCharacteristic(this.hap.Characteristic.CurrentRelativeHumidity).updateValue(cpuInfo.total);
     }
   };
 }
