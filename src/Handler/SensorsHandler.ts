@@ -39,7 +39,7 @@ export class SensorsHandler extends HandlerBase {
 
     private async getSensors(): Promise<SensorInfo[]> {
         try {
-            let response = await got('http://' + this.hostname + ':' + this.port + '/api/4/sensors');
+            let response = await got('http://' + this.hostname + ':' + this.port + '/api/4/sensors', { throwHttpErrors: false });
 
             if (response.statusCode == 200) {
                 return Promise.resolve(JSON.parse(response.body) as SensorInfo[])
