@@ -83,7 +83,7 @@ class GlancesPlatform implements DynamicPlatformPlugin {
 
 
   startInterval() {
-    this.log.info('Staring updating timer');
+    this.log.info('Starting updating timer');
 
     setInterval(() => {
       for (const handler of this.handlers) {
