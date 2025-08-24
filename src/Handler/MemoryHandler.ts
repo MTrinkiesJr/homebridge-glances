@@ -1,62 +1,59 @@
 import {
-    Logging,
-    API,
-    HAP,
-} from "homebridge";
-import { HandlerBase } from "./HandlerBase";
-import { BaseAccessory } from "../Accessoires/BaseAccessory";
-import { LoadAccessory } from "../Accessoires/LoadAccessory"
-import { MemoryInfo } from "../Models/MemoryInfo"
-const got = require('got');
+  Logging,
+  API,
+  HAP,
+} from 'homebridge';
+import { HandlerBase } from './HandlerBase.js';
+import { BaseAccessory } from '../Accessoires/BaseAccessory.js';
+import { LoadAccessory } from '../Accessoires/LoadAccessory.js';
+import { MemoryInfo } from '../Models/MemoryInfo.js';
+import got from 'got';
 
 export class MemoryHandler extends HandlerBase {
-    UsedMemoryInfo: LoadAccessory;
+  UsedMemoryInfo: LoadAccessory;
 
-    constructor(hap: HAP,api: API, prefix: string, hostname: string, port: number, log: Logging) {
-        super(hap, api, prefix, hostname, port, log);
-        this.UsedMemoryInfo = {} as LoadAccessory;
+  constructor(hap: HAP,api: API, prefix: string, hostname: string, port: number, log: Logging) {
+    super(hap, api, prefix, hostname, port, log);
+    this.UsedMemoryInfo = {} as LoadAccessory;
+  }
+
+  async getServices(): Promise<BaseAccessory[]> {
+    this.log.info('MemoryHandler: starting discovery');
+    const memoryInfo = await this.getMemoryInfo() as MemoryInfo;
+    this.log.info('MemoryHandler: received\'' + JSON.stringify(memoryInfo) + '\'');
+    if (memoryInfo) {
+      this.UsedMemoryInfo = new LoadAccessory(this.hap,this.api, this.log, this.prefix + ' MEMORY USED', memoryInfo.percent);
+      this.log.info('MemoryHandler: discovery finished');
+      return Promise.resolve([this.UsedMemoryInfo]);
     }
+    return Promise.resolve([]);
+  }
 
-    async getServices(): Promise<BaseAccessory[]> {
-        this.log.info("MemoryHandler: starting discovery");
-        let memoryInfo = await this.getMemoryInfo() as MemoryInfo;
-        this.log.info("MemoryHandler: received'" + JSON.stringify(memoryInfo) + "'");
-        if (memoryInfo) {
-            this.UsedMemoryInfo = new LoadAccessory(this.hap,this.api, this.log, this.prefix + " MEMORY USED", memoryInfo.percent);
-            this.log.info("MemoryHandler: discovery finished");
-            return Promise.resolve([this.UsedMemoryInfo]);
+  private async getMemoryInfo(): Promise<MemoryInfo> {
+    try {
+      const response = await got('http://' + this.hostname + ':' + this.port + '/api/4/mem', { throwHttpErrors: false });
+
+      if (response.statusCode === 200) {
+        return Promise.resolve(JSON.parse(response.body) as MemoryInfo);
+      }
+      // Check for glances version 3 api
+      if (response.statusCode === 404) {
+        this.log.debug('MemoryHandler: v4 endpoint not found, falling back to v3');
+        const responsev3 = await got('http://' + this.hostname + ':' + this.port + '/api/3/mem');
+        if (responsev3.statusCode === 200) {
+          return Promise.resolve(JSON.parse(responsev3.body) as MemoryInfo);
         }
-        return Promise.resolve([]);
+      }
+    } catch (error) {
+      this.log.error('MemoryHandler: Failed request: \'' + error + '\'');
     }
+    return Promise.resolve({} as MemoryInfo);
+  }
 
-    private async getMemoryInfo(): Promise<MemoryInfo> {
-        let memoryInfo: MemoryInfo;
-        memoryInfo = {} as MemoryInfo;
-
-        try {
-            let response = await got('http://' + this.hostname + ':' + this.port + '/api/4/mem', { throwHttpErrors: false });
-
-            if (response.statusCode == 200) {
-                return Promise.resolve(JSON.parse(response.body) as MemoryInfo);
-            }
-            // Check for glances version 3 api
-            if (response.statusCode == 404) {
-                this.log.debug("MemoryHandler: v4 endpoint not found, falling back to v3");
-              let responsev3 = await got('http://' + this.hostname + ':' + this.port + '/api/3/mem');
-              if (responsev3.statusCode === 200) {
-                return Promise.resolve(JSON.parse(responsev3.body) as MemoryInfo);
-              }
-            }
-        } catch (error) {
-            this.log.error("MemoryHandler: Failed request: '" + error + "'")
-        }
-        return Promise.resolve({} as MemoryInfo);
+  async updateServices(): Promise<void> {
+    const memoryInfo = await this.getMemoryInfo();
+    if (this.UsedMemoryInfo) {
+      this.UsedMemoryInfo?.LoadService.getCharacteristic(this.hap.Characteristic.CurrentRelativeHumidity).updateValue(memoryInfo.percent);
     }
-
-    async updateServices(): Promise<void> {
-        let memoryInfo = await this.getMemoryInfo();
-        if (this.UsedMemoryInfo) {
-            this.UsedMemoryInfo?.LoadService.getCharacteristic(this.hap.Characteristic.CurrentRelativeHumidity).updateValue(memoryInfo.percent);
-        }
-    };
+  };
 }
