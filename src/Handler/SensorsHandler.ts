@@ -46,7 +46,7 @@ export class SensorsHandler extends HandlerBase {
             }
             // Check for glances version 3 api
             if (response.statusCode == 404) {
-              this.log.info("SensorHandler: v4 endpoint not found, falling back to v3");
+              this.log.debug("SensorHandler: v4 endpoint not found, falling back to v3");
               let responsev3 = await got('http://' + this.hostname + ':' + this.port + '/api/3/sensors');
               if (responsev3.statusCode === 200) {
                 return Promise.resolve([]);
