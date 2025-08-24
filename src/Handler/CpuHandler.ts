@@ -36,7 +36,7 @@ export class CpuHandler extends HandlerBase {
         cpuInfo = {} as CpuInfo;
 
         try {
-            let response = await got('http://' + this.hostname + ':' + this.port + '/api/4/cpu');
+            let response = await got('http://' + this.hostname + ':' + this.port + '/api/4/cpu', { throwHttpErrors: false });
 
             if (response.statusCode == 200) {
                 return Promise.resolve(JSON.parse(response.body) as CpuInfo)
