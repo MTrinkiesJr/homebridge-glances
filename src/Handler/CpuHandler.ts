@@ -41,6 +41,14 @@ export class CpuHandler extends HandlerBase {
             if (response.statusCode == 200) {
                 return Promise.resolve(JSON.parse(response.body) as CpuInfo)
             }
+            // Check for glances version 3 api
+            if (response.statusCode == 404) {
+              this.log.info("CPUHandler: v4 endpoint not found, falling back to v3");
+              let responsev3 = await got('http://' + this.hostname + ':' + this.port + '/api/3/cpu');
+              if (responsev3.statusCode === 200) {
+                return Promise.resolve(JSON.parse(responsev3.body) as CpuInfo);
+              }
+            }
         } catch (error) {
             this.log.error("CpHandler: Failed request: '" + error + "'")
         }

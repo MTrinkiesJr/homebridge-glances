@@ -36,8 +36,16 @@ export class MemoryHandler extends HandlerBase {
         try {
             let response = await got('http://' + this.hostname + ':' + this.port + '/api/4/mem');
 
-            if (response.statusCode) {
+            if (response.statusCode == 200) {
                 return Promise.resolve(JSON.parse(response.body) as MemoryInfo);
+            }
+            // Check for glances version 3 api
+            if (response.statusCode == 404) {
+                this.log.info("MemoryHandler: v4 endpoint not found, falling back to v3");
+              let responsev3 = await got('http://' + this.hostname + ':' + this.port + '/api/3/mem');
+              if (responsev3.statusCode === 200) {
+                return Promise.resolve(JSON.parse(responsev3.body) as MemoryInfo);
+              }
             }
         } catch (error) {
             this.log.error("MemoryHandler: Failed request: '" + error + "'")
