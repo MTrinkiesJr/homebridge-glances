@@ -49,7 +49,7 @@ export class SensorsHandler extends HandlerBase {
               this.log.debug("SensorHandler: v4 endpoint not found, falling back to v3");
               let responsev3 = await got('http://' + this.hostname + ':' + this.port + '/api/3/sensors');
               if (responsev3.statusCode === 200) {
-                return Promise.resolve([]);
+                return Promise.resolve(JSON.parse(response.body) as SensorInfo[]);
               }
             }            
         } catch (error) {
