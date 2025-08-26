@@ -38,12 +38,20 @@ export class SensorsHandler extends HandlerBase {
     }
 
     private async getSensors(): Promise<SensorInfo[]> {
-        let response = await got('http://' + this.hostname + ':' + this.port + '/api/3/sensors');
-
         try {
+            let response = await got('http://' + this.hostname + ':' + this.port + '/api/4/sensors', { throwHttpErrors: false });
+
             if (response.statusCode == 200) {
                 return Promise.resolve(JSON.parse(response.body) as SensorInfo[])
             }
+            // Check for glances version 3 api
+            if (response.statusCode == 404) {
+              this.log.debug("SensorHandler: v4 endpoint not found, falling back to v3");
+              let responsev3 = await got('http://' + this.hostname + ':' + this.port + '/api/3/sensors');
+              if (responsev3.statusCode === 200) {
+                return Promise.resolve(JSON.parse(responsev3.body) as SensorInfo[]);
+              }
+            }            
         } catch (error) {
             this.log.error("SensorsHandler: Failed request: '" + error + "'")
         }

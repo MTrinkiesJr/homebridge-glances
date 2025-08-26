@@ -26,7 +26,7 @@ export abstract class HandlerBase {
         this.api = api;
     }
 
-    abstract async getServices(): Promise<BaseAccessory[]>
+    abstract getServices(): Promise<BaseAccessory[]>
 
-    abstract async updateServices() : Promise<void>;
+    abstract updateServices() : Promise<void>;
 }
