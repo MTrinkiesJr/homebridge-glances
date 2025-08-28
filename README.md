@@ -17,7 +17,6 @@ You can also put aliases to you sensors there, so on default they have generic n
 You can also put aliases to you sensors there, so on default they have generic names like 'it3451' etc.
 Following Plugins are supported:
 
-
 - sensors -> Temperature data
 - cpu -> Cpu load
 - mem -> Memory load
@@ -48,7 +47,6 @@ disable=False
 ```
 
 ## Homebridge configuration
-
 
 To enable the platform in homebridge add the following to the config:
 
@@ -108,20 +106,13 @@ following parameters are defined:
 
 ### Version 1.0.0
 
-
-### Version 1.0.0
-
 - Initial Version
-
 
 ### Version 1.0.1
 
-
 - Some small fixes
 
-
 ### Version 1.0.2
-
 
 - made it all asynch
 - changed from `StaticPlatform` to `DynamicPlatform` (for async reasons)
