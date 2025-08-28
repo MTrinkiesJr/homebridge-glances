@@ -1,30 +1,21 @@
 import {
-    HAP,
-    API,
-    Logging
-  } from "homebridge";
-
+  HAP,
+  API,
+  Logging,
+} from 'homebridge';
   
-import {BaseAccessory} from "../Accessoires/BaseAccessory";
+import { BaseAccessory } from '../Accessoires/BaseAccessory.js';
 
 export abstract class HandlerBase {
 
-    log: Logging;
-    hostname: string;
-    port : number;
-    hap: HAP;
-    prefix: string;
-    api: API;
-
-    constructor(hap: HAP,api: API, prefix: string, hostname: string, port: number, log: Logging)
-    {
-        this.hostname = hostname;
-        this.port = port;
-        this.log = log;
-        this.prefix = prefix;
-        this.hap = hap;
-        this.api = api;
-    }
+  protected constructor(
+    protected readonly hap: HAP,
+    protected readonly api: API, 
+    protected readonly prefix: string, 
+    protected readonly hostname: string, 
+    protected readonly port: number, 
+    protected readonly log: Logging,
+  ) {}
 
     abstract getServices(): Promise<BaseAccessory[]>
 
