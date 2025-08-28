@@ -2,7 +2,7 @@
   "name": "homebridge-glances",
   "displayName": "Homebridge Glances",
   "type": "module",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "Homebridge Glances Plugin reports system stats to HomeKit",
   "author": "Michael Trinkies",
   "license": "ISC",
