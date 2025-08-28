@@ -18,6 +18,8 @@ export abstract class HandlerBase {
   ) {}
 
     abstract getServices(): Promise<BaseAccessory[]>
+    abstract getServices(): Promise<BaseAccessory[]>
 
+    abstract updateServices() : Promise<void>;
     abstract updateServices() : Promise<void>;
 }
