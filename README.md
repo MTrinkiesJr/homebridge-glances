@@ -51,7 +51,7 @@ platforms:
  {
   "name":  "Glances",
   "platform":  "Glances",
-  "hostname":  "{IP},
+  "hostname":  "{IP}",
   "updateInterval":  3000,
   "prefix":  "{PREFIX}",
   "sensors": true,
@@ -109,6 +109,11 @@ following parameters are defined:
 
 - updated dependencies
 - call v4 of glances API and fallback to v3
+
+### Version 2.0.0
+
+- updated plugin to current template for homebridge version 2 support
+- replaced got with ky for api requests
 
 Future plans:
 
